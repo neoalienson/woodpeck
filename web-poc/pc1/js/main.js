@@ -261,8 +261,8 @@ function play() {
 
 function upload() {
   var blob = new Blob(recordedBlobs, {type: 'video/webm'});
-  var url = window.URL.createObjectURL(blob);
-  firebase.storageRef.child('videos/word.webm');
+//  var url = window.URL.createObjectURL(blob);
+  var uploadTask = firebase.storage().ref().child('videos/word.webm').put(blob);
   uploadTask.on('state_changed', function(snapshot){
     // Observe state change events such as progress, pause, and resume
     }, function(error) {
