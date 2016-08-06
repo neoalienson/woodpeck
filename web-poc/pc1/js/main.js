@@ -1,11 +1,3 @@
-/*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
- */
-
 'use strict';
 
 var mediaSource = new MediaSource();
@@ -69,6 +61,10 @@ function gotStream(stream) {
 }
 
 function start() {
+  firebase.database().ref('offer_ice').remove();
+  firebase.database().ref('offer').remove();
+  firebase.database().ref('answers_ice').remove();
+  firebase.database().ref('answers').remove();
   trace('Requesting local stream');
   startButton.disabled = true;
   navigator.mediaDevices.getUserMedia({
@@ -120,84 +116,71 @@ function onCreateSessionDescriptionError(error) {
 }
 
 function onCreateOfferSuccess(desc) {
-  trace('Offer from pc1\n' + desc.sdp);
+  trace('Offer from pc1\n');
+  firebase.database().ref('offer').set({
+    sdp : desc.sdp
+  });
+  firebase.database().ref('answers').on('child_added', function(answer) {
+     var desc = { 'type':'answer', 'sdp':answer.val().sdp };
+     pc1.setRemoteDescription(desc).then(
+       function() {
+         onSetRemoteSuccess(pc1);
+        },
+        onSetSessionDescriptionError
+    );    
+  });
+  firebase.database().ref('answers_ice').on('child_added', function(ice) {
+    pc1.addIceCandidate(
+      new RTCIceCandidate(ice.val())
+    ).then(
+      function() {
+        onAddIceCandidateSuccess();
+      },
+      function(err) {
+        onAddIceCandidateError(err);
+      }
+    );
+  });
+  
   trace('pc1 setLocalDescription start');
   pc1.setLocalDescription(desc).then(
     function() {
-      onSetLocalSuccess(pc1);
+      onSetLocalSuccess();
     },
     onSetSessionDescriptionError
   );
 }
 
-function onSetLocalSuccess(pc) {
-//  trace(getName(pc) + ' setLocalDescription complete');
+function onSetLocalSuccess() {
+  trace(' setLocalDescription complete');
 }
 
-function onSetRemoteSuccess(pc) {
-//  trace(getName(pc) + ' setRemoteDescription complete');
+function onSetRemoteSuccess() {
+  trace('setRemoteDescription complete');
 }
 
 function onSetSessionDescriptionError(error) {
   trace('Failed to set session description: ' + error.toString());
 }
 
-/*
-function gotRemoteStream(e) {
-  remoteVideo.srcObject = e.stream;
-  trace('pc2 received remote stream');
-}
-*/
-
-function onCreateAnswerSuccess(desc) {
-  trace('Answer from pc2:\n' + desc.sdp);
-  trace('pc2 setLocalDescription start');
-  pc2.setLocalDescription(desc).then(
-    function() {
-      onSetLocalSuccess(pc2);
-    },
-    onSetSessionDescriptionError
-  );
-  trace('pc1 setRemoteDescription start');
-  pc1.setRemoteDescription(desc).then(
-    function() {
-      onSetRemoteSuccess(pc1);
-    },
-    onSetSessionDescriptionError
-  );
-}
-
 function onIceCandidate(pc, event) {
-/*
   if (event.candidate) {
-    getOtherPc(pc).addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      function() {
-        onAddIceCandidateSuccess(pc);
-      },
-      function(err) {
-        onAddIceCandidateError(pc, err);
-      }
-    );
-    trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
+//    trace(' ICE candidate: \n' + event.candidate.candidate);
+    firebase.database().ref('offer_ice').push({
+      candidate : event.candidate.candidate
+    });  
   }
-  */
 }
 
-function onAddIceCandidateSuccess(pc) {
-  trace(getName(pc) + ' addIceCandidate success');
+function onAddIceCandidateSuccess() {
+  trace(' addIceCandidate success');
 }
 
-function onAddIceCandidateError(pc, error) {
-  trace(getName(pc) + ' failed to add ICE Candidate: ' + error.toString());
+function onAddIceCandidateError(error) {
+  trace(' failed to add ICE Candidate: ' + error.toString());
 }
 
 function onIceStateChange(pc, event) {
-  if (pc) {
-    trace(getName(pc) + ' ICE state: ' + pc.iceConnectionState);
-    console.log('ICE state change event: ', event);
-  }
 }
 
 function hangup() {
