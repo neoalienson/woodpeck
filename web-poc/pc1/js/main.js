@@ -198,7 +198,7 @@ function toggleRecording() {
     stopRecording();
     recordButton.textContent = 'Start Recording';
     playButton.disabled = false;
-    downloadButton.disabled = false;
+    uploadButton.disabled = false;
   }
 }
 
@@ -241,7 +241,7 @@ function startRecording() {
   console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
   recordButton.textContent = 'Stop Recording';
   playButton.disabled = true;
-  downloadButton.disabled = true;
+  uploadButton.disabled = true;
   mediaRecorder.onstop = handleStop;
   mediaRecorder.ondataavailable = handleDataAvailable;
   mediaRecorder.start(10); // collect 10ms of data
@@ -259,19 +259,18 @@ function play() {
   recordedVideo.src = window.URL.createObjectURL(superBuffer);
 }
 
-function download() {
+function upload() {
   var blob = new Blob(recordedBlobs, {type: 'video/webm'});
   var url = window.URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.style.display = 'none';
-  a.href = url;
-  a.download = 'test.webm';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(function() {
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  }, 100);
+  firebase.storageRef.child('videos/word.webm');
+  uploadTask.on('state_changed', function(snapshot){
+    // Observe state change events such as progress, pause, and resume
+    }, function(error) {
+      trace('file upload error ' + error);
+    }, function() {
+      trace('upload completed');
+    var downloadURL = uploadTask.snapshot.downloadURL;
+    });
 }
 
 function handleSourceOpen(event) {
