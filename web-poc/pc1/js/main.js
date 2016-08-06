@@ -11,7 +11,7 @@ var broadcastButton = document.getElementById('broadcastButton');
 var hangupButton = document.getElementById('hangupButton');
 var recordButton = document.querySelector('button#record');
 var playButton = document.querySelector('button#play');
-var downloadButton = document.querySelector('button#download');
+var uploadButton = document.querySelector('button#upload');
 broadcastButton.disabled = true;
 hangupButton.disabled = true;
 startButton.onclick = start;
@@ -19,7 +19,7 @@ broadcastButton.onclick = call;
 hangupButton.onclick = hangup;
 recordButton.onclick = toggleRecording;
 playButton.onclick = play;
-downloadButton.onclick = download;
+uploadButton.onclick = upload;
 
 var startTime;
 var localVideo = document.getElementById('localVideo');
@@ -73,7 +73,7 @@ function start() {
   })
   .then(gotStream)
   .catch(function(e) {
-    alert('getUserMedia() error: ' + e.name);
+    trace('getUserMedia() error: ' + e.name);
   });
 }
 
@@ -269,7 +269,7 @@ function upload() {
       trace('file upload error ' + error);
     }, function() {
       trace('upload completed');
-    var downloadURL = uploadTask.snapshot.downloadURL;
+    var uploadURL = uploadTask.snapshot.uploadURL;
     });
 }
 
