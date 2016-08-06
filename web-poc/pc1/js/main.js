@@ -110,11 +110,39 @@ function onCreateSessionDescriptionError(error) {
   trace('Failed to create session description: ' + error.toString());
 }
 
+
 function onCreateOfferSuccess(desc) {
   trace('Offer from pc1\n');
   firebase.database().ref('offer').set({
     sdp : desc.sdp
   });
+
+
+  // monitor chat message  
+  firebase.database().ref('chat').on('child_added', function(data) {
+    var message = data.val();
+    var bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    
+    var bubbleText = document.createElement('div');
+    bubbleText.className = 'bubbleText';
+    bubbleText.textContent = message.message;
+
+    var bubbleName = document.createElement('div');
+    bubbleName.className = 'bubbleName';
+    bubbleName.textContent = message.name;
+
+    var bubbleDate = document.createElement('div');
+    bubbleDate.className = 'bubbleDate';
+    var postOn = new Date(message.postOn);
+    bubbleDate.textContent = '' + postOn.getHours() + ':' + postOn.getMinutes() + ':' + postOn.getSeconds();
+    
+    bubble.appendChild(bubbleText);
+    bubble.appendChild(bubbleName);
+    bubble.appendChild(bubbleDate);
+    document.getElementById('messageContainer').appendChild(bubble);
+  });
+  
   firebase.database().ref('answers').on('child_added', function(answer) {
      var desc = { 'type':'answer', 'sdp':answer.val().sdp };
      pc1.setRemoteDescription(desc).then(

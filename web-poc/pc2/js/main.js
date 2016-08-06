@@ -4,6 +4,8 @@ var mediaSource = new MediaSource();
 mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
 var sourceBuffer;
 
+var sendButton = document.getElementById('sendButton');
+var messageInput = document.getElementById('messageInput');
 var callButton = document.getElementById('callButton');
 var hangupButton = document.getElementById('hangupButton');
 var recordButton = document.querySelector('button#record');
@@ -13,6 +15,23 @@ hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 playButton.onclick = play;
+sendButton.onclick = send;
+
+function send() {
+  var text = messageInput.value;
+  firebase.database().ref('chat').push({
+    name : 'user1',
+    message : text,
+    postOn : new Date().getTime()
+  });  
+
+  var message = document.createElement('div');
+  message.className = 'message';
+  message.textContent = text;
+  document.getElementById('messageContainer').appendChild(message);
+  messageInput.value = '';
+
+}
 
 var startTime;
 var remoteVideo = document.getElementById('remoteVideo');
