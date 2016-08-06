@@ -6,24 +6,19 @@ var mediaRecorder;
 var recordedBlobs;
 var sourceBuffer;
 
-var startButton = document.getElementById('startButton');
 var broadcastButton = document.getElementById('broadcastButton');
 var hangupButton = document.getElementById('hangupButton');
 var recordButton = document.querySelector('button#record');
-var playButton = document.querySelector('button#play');
 var uploadButton = document.querySelector('button#upload');
-broadcastButton.disabled = true;
+broadcastButton.disabled = false;
 hangupButton.disabled = true;
-startButton.onclick = start;
-broadcastButton.onclick = call;
+broadcastButton.onclick = broadcast;
 hangupButton.onclick = hangup;
 recordButton.onclick = toggleRecording;
-playButton.onclick = play;
 uploadButton.onclick = upload;
 
 var startTime;
 var localVideo = document.getElementById('localVideo');
-var recordedVideo = document.querySelector('video#recorded');
 
 localVideo.addEventListener('loadedmetadata', function() {
   trace('Local video videoWidth: ' + this.videoWidth +
@@ -58,15 +53,15 @@ function gotStream(stream) {
   localVideo.srcObject = stream;
   localStream = stream;
   broadcastButton.disabled = false;
+  start();
 }
 
-function start() {
+function broadcast() {
   firebase.database().ref('offer_ice').remove();
   firebase.database().ref('offer').remove();
   firebase.database().ref('answers_ice').remove();
   firebase.database().ref('answers').remove();
   trace('Requesting local stream');
-  startButton.disabled = true;
   navigator.mediaDevices.getUserMedia({
     audio: true,
     video: true
@@ -77,7 +72,7 @@ function start() {
   });
 }
 
-function call() {
+function start() {
   broadcastButton.disabled = true;
   hangupButton.disabled = false;
   trace('Starting call');
@@ -197,7 +192,6 @@ function toggleRecording() {
   } else {
     stopRecording();
     recordButton.textContent = 'Start Recording';
-    playButton.disabled = false;
     uploadButton.disabled = false;
   }
 }
@@ -240,7 +234,6 @@ function startRecording() {
   }
   console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
   recordButton.textContent = 'Stop Recording';
-  playButton.disabled = true;
   uploadButton.disabled = true;
   mediaRecorder.onstop = handleStop;
   mediaRecorder.ondataavailable = handleDataAvailable;
@@ -251,12 +244,6 @@ function startRecording() {
 function stopRecording() {
   mediaRecorder.stop();
   console.log('Recorded Blobs: ', recordedBlobs);
-  recordedVideo.controls = true;
-}
-
-function play() {
-  var superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
-  recordedVideo.src = window.URL.createObjectURL(superBuffer);
 }
 
 function upload() {
