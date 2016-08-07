@@ -6,15 +6,11 @@ var sourceBuffer;
 
 var sendButton = document.getElementById('sendButton');
 var messageInput = document.getElementById('messageInput');
-var callButton = document.getElementById('callButton');
+var watchButton = document.getElementById('watchButton');
 var hangupButton = document.getElementById('hangupButton');
-var recordButton = document.querySelector('button#record');
-var playButton = document.querySelector('button#play');
-var downloadButton = document.querySelector('button#download');
 hangupButton.disabled = true;
-callButton.onclick = call;
+watchButton.onclick = watch;
 hangupButton.onclick = hangup;
-playButton.onclick = play;
 sendButton.onclick = send;
 
 function send() {
@@ -82,14 +78,14 @@ function gotStream(stream) {
   trace('Received local stream');
 //  remoteVideo.srcObject = stream;
   remoteStream = stream;
-  callButton.disabled = false;
+  watchButton.disabled = false;
 }
 
-function call() {
+function watch() {
   firebase.database().ref('answers_ice').remove();
   firebase.database().ref('answers').remove();
   
-  callButton.disabled = true;
+  watchButton.disabled = true;
   hangupButton.disabled = false;
   trace('Starting call');
   startTime = window.performance.now();
@@ -203,32 +199,6 @@ function hangup() {
   pc2.close();
   pc2 = null;
   hangupButton.disabled = true;
-  callButton.disabled = false;
+  watchButton.disabled = false;
 }
 
-function toggleRecording() {
-  if (recordButton.textContent === 'Start Recording') {
-    startRecording();
-  } else {
-    stopRecording();
-    recordButton.textContent = 'Start Recording';
-    playButton.disabled = false;
-    downloadButton.disabled = false;
-  }
-}
-
-
-function handleDataAvailable(event) {
-  if (event.data && event.data.size > 0) {
-    recordedBlobs.push(event.data);
-  }
-}
-function handleStop(event) {
-  console.log('Recorder stopped: ', event);
-}
-
-function handleSourceOpen(event) {
-  console.log('MediaSource opened');
-  sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8"');
-  console.log('Source buffer: ', sourceBuffer);
-}
