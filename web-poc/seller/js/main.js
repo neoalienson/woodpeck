@@ -140,7 +140,7 @@ function onCreateOfferSuccess(desc) {
     bubble.appendChild(bubbleText);
     bubble.appendChild(bubbleName);
     bubble.appendChild(bubbleDate);
-    document.getElementById('messageContainer').appendChild(bubble);
+    $('#messageContainer').prepend(bubble);
   });
   
   firebase.database().ref('answers').on('child_added', function(answer) {

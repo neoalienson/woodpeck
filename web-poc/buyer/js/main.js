@@ -1,9 +1,5 @@
 'use strict';
 
-var mediaSource = new MediaSource();
-mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
-var sourceBuffer;
-
 var sendButton = document.getElementById('sendButton');
 var messageInput = document.getElementById('messageInput');
 var watchButton = document.getElementById('watchButton');
